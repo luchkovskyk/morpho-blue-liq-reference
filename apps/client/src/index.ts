@@ -1,4 +1,9 @@
-import type { ChainConfig } from "@morpho-blue-liquidation-bot/config";
+import {
+  MARKETS_FETCHING_COOLDOWN_PERIOD,
+  POSITION_LIQUIDATION_COOLDOWN_ENABLED,
+  POSITION_LIQUIDATION_COOLDOWN_PERIOD,
+  type ChainConfig,
+} from "@morpho-blue-liquidation-bot/config";
 import { createWalletClient, Hex, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { watchBlocks } from "viem/actions";
@@ -11,6 +16,10 @@ import { UniswapV3Venue } from "./liquidityVenues/uniswapV3";
 import { UniswapV4Venue } from "./liquidityVenues/uniswapV4";
 import { ChainlinkPricer, DefiLlamaPricer } from "./pricers";
 import type { Pricer } from "./pricers/pricer";
+import {
+  MarketsFetchingCooldownMechanism,
+  PositionLiquidationCooldownMechanism,
+} from "./utils/cooldownMechanisms";
 
 export const launchBot = (config: ChainConfig) => {
   const logTag = `[${config.chain.name} client]: `;
@@ -49,11 +58,21 @@ export const launchBot = (config: ChainConfig) => {
     flashbotAccount = privateKeyToAccount(process.env.FLASHBOTS_PRIVATE_KEY as Hex);
   }
 
+  let positionLiquidationCooldownMechanism = undefined;
+  if (POSITION_LIQUIDATION_COOLDOWN_ENABLED) {
+    positionLiquidationCooldownMechanism = new PositionLiquidationCooldownMechanism(
+      POSITION_LIQUIDATION_COOLDOWN_PERIOD,
+    );
+  }
+
+  const marketsFetchingCooldownMechanism = new MarketsFetchingCooldownMechanism(
+    MARKETS_FETCHING_COOLDOWN_PERIOD,
+  );
+
   const inputs: LiquidationBotInputs = {
     logTag,
     chainId: config.chainId,
     client,
-    morphoAddress: config.morpho.address,
     wNative: config.wNative,
     vaultWhitelist: config.vaultWhitelist,
     additionalMarketsWhitelist: config.additionalMarketsWhitelist,
@@ -61,6 +80,8 @@ export const launchBot = (config: ChainConfig) => {
     treasuryAddress: config.treasuryAddress ?? client.account.address,
     liquidityVenues,
     pricers: config.checkProfit ? pricers : undefined,
+    marketsFetchingCooldownMechanism,
+    positionLiquidationCooldownMechanism,
     flashbotAccount,
   };
 

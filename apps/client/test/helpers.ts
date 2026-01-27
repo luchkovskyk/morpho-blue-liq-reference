@@ -2,7 +2,6 @@ import { MarketUtils } from "@morpho-org/blue-sdk";
 import type { AnvilTestClient } from "@morpho-org/test";
 import { ExecutorEncoder } from "executooor-viem";
 import nock from "nock";
-import { replaceBigInts as replaceBigIntsBase } from "ponder";
 import {
   type Address,
   encodePacked,
@@ -16,7 +15,7 @@ import {
 import { getStorageAt, readContract } from "viem/actions";
 import { vi } from "vitest";
 
-import { morphoBlueAbi } from "../../ponder/abis/MorphoBlue";
+import { morphoBlueAbi } from "../src/abis/morpho/morphoBlue";
 import { OneInch } from "../src/liquidityVenues";
 
 import { BORROW_SHARES_AND_COLLATERAL_OFFSET, borrower, MORPHO, POSITION_SLOT } from "./constants";
@@ -94,26 +93,23 @@ export async function setupPosition(
     .post("/chain/1/withdraw-queue-set", { vaults: [] })
     .reply(200, [])
     .post("/chain/1/liquidatable-positions", { marketIds: [] })
-    .reply(
-      200,
-      replaceBigInts({
-        warnings: [],
-        results: [
-          {
-            market: {
-              params: marketParams,
-            },
-            positionsLiq: [
-              {
-                user: borrower.address,
-                seizableCollateral: position[2],
-              },
-            ],
-            positionsPreLiq: [],
+    .reply(200, {
+      warnings: [],
+      results: [
+        {
+          market: {
+            params: marketParams,
           },
-        ],
-      }),
-    );
+          positionsLiq: [
+            {
+              user: borrower.address,
+              seizableCollateral: position[2],
+            },
+          ],
+          positionsPreLiq: [],
+        },
+      ],
+    });
 }
 
 export function mockEtherPrice(
@@ -216,10 +212,6 @@ function modifyCollateralSlot(value: Hex, amount: bigint) {
   const slotBytes = value.slice(34);
 
   return `${collateralBytes}${slotBytes}` as Hex;
-}
-
-function replaceBigInts<T>(value: T) {
-  return replaceBigIntsBase(value, (x) => `${String(x)}n`);
 }
 
 export const syncTimestamp = async (client: AnvilTestClient, timestamp?: bigint) => {

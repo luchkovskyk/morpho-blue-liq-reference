@@ -4,7 +4,7 @@ import { readContract } from "viem/actions";
 import { mainnet } from "viem/chains";
 import { beforeEach, describe, expect } from "vitest";
 
-import { morphoBlueAbi } from "../../../../ponder/abis/MorphoBlue.js";
+import { morphoBlueAbi } from "../../../src/abis/morpho/morphoBlue.js";
 import { LiquidationBot } from "../../../src/bot.js";
 import { UniswapV3Venue, Erc4626, PendlePTVenue } from "../../../src/liquidityVenues/index.js";
 import { MorphoApi } from "../../../src/pricers/index.js";
