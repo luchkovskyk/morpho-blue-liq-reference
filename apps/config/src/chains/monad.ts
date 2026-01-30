@@ -1,23 +1,23 @@
 import { defineChain } from "viem";
 
-export const katana = defineChain({
-  id: 747474,
-  name: "Katana",
-  network: "katana",
+export const monad = defineChain({
+  id: 143,
+  name: "Monad Mainnet",
+  network: "monad",
   nativeCurrency: {
-    symbol: "ETH",
-    name: "Ether",
+    symbol: "MON",
+    name: "Monad",
     decimals: 18,
   },
   rpcUrls: {
     default: {
-      http: ["https://rpc.katanarpc.com", "https://rpc.katana.network"],
+      http: ["https://143.rpc.hypersync.xyz"],
     },
   },
   blockExplorers: {
     default: {
-      name: "Katana Explorer",
-      url: "https://explorer.katanarpc.com",
+      name: "Monadscan",
+      url: "https://monadscan.com/",
     },
   },
   contracts: {

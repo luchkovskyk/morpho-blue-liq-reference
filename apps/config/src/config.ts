@@ -1,6 +1,6 @@
-import { base, mainnet, unichain, worldchain } from "viem/chains";
+import { arbitrum, base, katana, mainnet, unichain, worldchain } from "viem/chains";
 
-import { hyperevm, katana } from "./chains";
+import { hyperevm, monad } from "./chains";
 import type { Config } from "./types";
 
 export const COOLDOWN_ENABLED = false; // true if you want to enable the cooldown mechanism
@@ -70,6 +70,7 @@ export const chainConfigs: Record<number, Config> = {
       vaultWhitelist: ["0xbeeF010f9cb27031ad51e3333f9aF9C6B1228183"],
       additionalMarketsWhitelist: [],
       checkProfit: true,
+      liquidationBufferBps: 50,
       useFlashbots: false,
       blockInterval: 10,
     },
@@ -94,6 +95,7 @@ export const chainConfigs: Record<number, Config> = {
       vaultWhitelist: "morpho-api",
       additionalMarketsWhitelist: [],
       checkProfit: false,
+      liquidationBufferBps: 50,
       useFlashbots: false,
       blockInterval: 5,
     },
@@ -118,8 +120,33 @@ export const chainConfigs: Record<number, Config> = {
       vaultWhitelist: "morpho-api",
       additionalMarketsWhitelist: [],
       checkProfit: false,
+      liquidationBufferBps: 50,
       useFlashbots: false,
       blockInterval: 5,
+    },
+  },
+  [arbitrum.id]: {
+    chain: arbitrum,
+    morpho: { address: "0x6c247b1F6182318877311737BaC0844bAa518F5e", startBlock: 296446593 },
+    adaptiveCurveIrm: {
+      address: "0x66F30587FB8D4206918deb78ecA7d5eBbafD06DA",
+      startBlock: 296446593,
+    },
+    metaMorphoFactories: {
+      addresses: ["0x878988f5f561081deEa117717052164ea1Ef0c82"],
+      startBlock: 296446593,
+    },
+    preLiquidationFactory: {
+      address: "0x635c31B5DF1F7EFbCbC07E302335Ef4230758e3d",
+      startBlock: 307326238,
+    },
+    wNative: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
+    options: {
+      vaultWhitelist: "morpho-api",
+      additionalMarketsWhitelist: [],
+      checkProfit: false,
+      liquidationBufferBps: 50,
+      useFlashbots: false,
     },
   },
   [worldchain.id]: {
@@ -147,12 +174,13 @@ export const chainConfigs: Record<number, Config> = {
       ],
       additionalMarketsWhitelist: [],
       checkProfit: false,
+      liquidationBufferBps: 50,
       useFlashbots: false,
       blockInterval: 5,
     },
   },
   [hyperevm.id]: {
-    chain: worldchain,
+    chain: hyperevm,
     morpho: { address: "0x68e37dE8d93d3496ae143F2E900490f6280C57cD", startBlock: 1988429 },
     adaptiveCurveIrm: {
       address: "0xD4a426F010986dCad727e8dd6eed44cA4A9b7483",
@@ -175,7 +203,33 @@ export const chainConfigs: Record<number, Config> = {
       ],
       additionalMarketsWhitelist: [],
       checkProfit: false,
+      liquidationBufferBps: 50,
       useFlashbots: false,
+    },
+  },
+  [monad.id]: {
+    chain: monad,
+    morpho: { address: "0xD5D960E8C380B724a48AC59E2DfF1b2CB4a1eAee", startBlock: 31907457 },
+    adaptiveCurveIrm: {
+      address: "0x09475a3D6eA8c314c592b1a3799bDE044E2F400F",
+      startBlock: 31907457,
+    },
+    metaMorphoFactories: {
+      addresses: ["0x33f20973275B2F574488b18929cd7DCBf1AbF275"],
+      startBlock: 32320327,
+    },
+    preLiquidationFactory: {
+      address: "0xB5b3e541abD19799E0c65905a5a42BD37d6c94c0",
+      startBlock: 32321504,
+    },
+    wNative: "0x3bd359C1119dA7Da1D913D1C4D2B7c461115433A",
+    options: {
+      vaultWhitelist: "morpho-api",
+      additionalMarketsWhitelist: [],
+      checkProfit: false,
+      liquidationBufferBps: 50,
+      useFlashbots: false,
+      blockInterval: 10,
     },
   },
 };
