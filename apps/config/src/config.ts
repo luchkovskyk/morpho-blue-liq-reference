@@ -1,6 +1,6 @@
-import { base, mainnet, unichain, worldchain } from "viem/chains";
+import { arbitrum, base, katana, mainnet, unichain, worldchain } from "viem/chains";
 
-import { hyperevm, katana } from "./chains";
+import { hyperevm, monad } from "./chains";
 import type { Config } from "./types";
 
 /// Bad debt realization
@@ -40,6 +40,7 @@ export const chainConfigs: Record<number, Config> = {
       vaultWhitelist: ["0xbeeF010f9cb27031ad51e3333f9aF9C6B1228183"],
       additionalMarketsWhitelist: [],
       checkProfit: true,
+      liquidationBufferBps: 50,
       useFlashbots: false,
       blockInterval: 10,
     },
@@ -51,6 +52,7 @@ export const chainConfigs: Record<number, Config> = {
       vaultWhitelist: "morpho-api",
       additionalMarketsWhitelist: [],
       checkProfit: false,
+      liquidationBufferBps: 50,
       useFlashbots: false,
       blockInterval: 5,
     },
@@ -62,8 +64,20 @@ export const chainConfigs: Record<number, Config> = {
       vaultWhitelist: "morpho-api",
       additionalMarketsWhitelist: [],
       checkProfit: false,
+      liquidationBufferBps: 50,
       useFlashbots: false,
       blockInterval: 5,
+    },
+  },
+  [arbitrum.id]: {
+    chain: arbitrum,
+    wNative: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
+    options: {
+      vaultWhitelist: "morpho-api",
+      additionalMarketsWhitelist: [],
+      checkProfit: false,
+      liquidationBufferBps: 50,
+      useFlashbots: false,
     },
   },
   [worldchain.id]: {
@@ -78,6 +92,7 @@ export const chainConfigs: Record<number, Config> = {
       ],
       additionalMarketsWhitelist: [],
       checkProfit: false,
+      liquidationBufferBps: 50,
       useFlashbots: false,
       blockInterval: 5,
     },
@@ -93,7 +108,20 @@ export const chainConfigs: Record<number, Config> = {
       ],
       additionalMarketsWhitelist: [],
       checkProfit: false,
+      liquidationBufferBps: 50,
       useFlashbots: false,
+    },
+  },
+  [monad.id]: {
+    chain: monad,
+    wNative: "0x3bd359C1119dA7Da1D913D1C4D2B7c461115433A",
+    options: {
+      vaultWhitelist: "morpho-api",
+      additionalMarketsWhitelist: [],
+      checkProfit: false,
+      liquidationBufferBps: 50,
+      useFlashbots: false,
+      blockInterval: 10,
     },
   },
 };
