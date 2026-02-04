@@ -19,6 +19,7 @@ export const chainConfigs: Record<number, Config> = {
   [mainnet.id]: {
     chain: mainnet,
     wNative: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+    maxBlockRange: Number.POSITIVE_INFINITY,
     options: {
       vaultWhitelist: [
         "0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB",
@@ -26,8 +27,9 @@ export const chainConfigs: Record<number, Config> = {
       ],
       additionalMarketsWhitelist: [
         "0x1eda1b67414336cab3914316cb58339ddaef9e43f939af1fed162a989c98bc20",
+        "0xff527fe9c6516f9d82a3d51422ccb031d123266e6e26d4c22c942a948c180a75",
       ],
-      checkProfit: true,
+      checkProfit: false,
       liquidationBufferBps: 50,
       useFlashbots: true,
       blockInterval: 2,
@@ -36,10 +38,11 @@ export const chainConfigs: Record<number, Config> = {
   [base.id]: {
     chain: base,
     wNative: "0x4200000000000000000000000000000000000006",
+    maxBlockRange: 10_000,
     options: {
       vaultWhitelist: ["0xbeeF010f9cb27031ad51e3333f9aF9C6B1228183"],
       additionalMarketsWhitelist: [],
-      checkProfit: true,
+      checkProfit: false,
       liquidationBufferBps: 50,
       useFlashbots: false,
       blockInterval: 10,
@@ -48,6 +51,7 @@ export const chainConfigs: Record<number, Config> = {
   [unichain.id]: {
     chain: unichain,
     wNative: "0x4200000000000000000000000000000000000006",
+    maxBlockRange: 10_000,
     options: {
       vaultWhitelist: "morpho-api",
       additionalMarketsWhitelist: [],
@@ -72,6 +76,7 @@ export const chainConfigs: Record<number, Config> = {
   [arbitrum.id]: {
     chain: arbitrum,
     wNative: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
+    maxBlockRange: 10_000,
     options: {
       vaultWhitelist: "morpho-api",
       additionalMarketsWhitelist: [],
@@ -100,6 +105,7 @@ export const chainConfigs: Record<number, Config> = {
   [hyperevm.id]: {
     chain: worldchain,
     wNative: "0x5555555555555555555555555555555555555555",
+    maxBlockRange: 10_000,
     options: {
       vaultWhitelist: [
         "0x8A862fD6c12f9ad34C9c2ff45AB2b6712e8CEa27", // Felix USDC
@@ -115,6 +121,7 @@ export const chainConfigs: Record<number, Config> = {
   [monad.id]: {
     chain: monad,
     wNative: "0x3bd359C1119dA7Da1D913D1C4D2B7c461115433A",
+    maxBlockRange: 1000,
     options: {
       vaultWhitelist: "morpho-api",
       additionalMarketsWhitelist: [],

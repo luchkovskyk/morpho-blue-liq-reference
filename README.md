@@ -46,6 +46,10 @@ For each chain, here are the parameters that needs to be configured:
 
 - `wNative`: The chain's wrapped native asset (ex: WETH's address on Ethereum mainnet).
 
+### Chain Max Block Range
+
+- `maxBlockRange`: The maximum `eth_getLogs` block range supported by your RPC for this chain.
+
 ### Options
 
 **Markets Whitelist**: The bot will only liquidate positions from the markets that are whitelisted. There are two ways to whitelist markets:

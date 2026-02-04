@@ -3,6 +3,7 @@ import type { Address, Chain, Hex } from "viem";
 export interface Config {
   chain: Chain;
   wNative: Address;
+  maxBlockRange?: number;
   options: Options;
 }
 

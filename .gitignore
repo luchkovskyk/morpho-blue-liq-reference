@@ -2,6 +2,13 @@
 **/node_modules
 
 **/dist
+**/.cache
+
+# Vendor
+**/vendor
+
+# Docker
+**/.dockerignore
 
 # Debug
 npm-debug.log*

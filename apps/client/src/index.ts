@@ -4,7 +4,7 @@ import {
   POSITION_LIQUIDATION_COOLDOWN_PERIOD,
   type ChainConfig,
 } from "@morpho-blue-liquidation-bot/config";
-import { createWalletClient, Hex, http } from "viem";
+import { Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { watchBlocks } from "viem/actions";
 
@@ -20,16 +20,18 @@ import {
   MarketsFetchingCooldownMechanism,
   PositionLiquidationCooldownMechanism,
 } from "./utils/cooldownMechanisms";
+import { getClient } from "./utils/utils";
 
 export const launchBot = (config: ChainConfig) => {
   const logTag = `[${config.chain.name} client]: `;
   console.log(`${logTag}Starting up`);
 
-  const client = createWalletClient({
-    chain: config.chain,
-    transport: http(config.rpcUrl),
-    account: privateKeyToAccount(config.liquidationPrivateKey),
-  });
+  const client = getClient(
+    config.chain,
+    config.rpcUrl,
+    config.liquidationPrivateKey,
+    config.maxBlockRange,
+  );
 
   // LIQUIDITY VENUES
   const liquidityVenues: LiquidityVenue[] = [];
