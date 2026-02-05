@@ -96,25 +96,17 @@ export class LiquidationBot {
   async run() {
     await this.fetchMarkets();
 
-    const { liquidatablePositions, preLiquidatablePositions } = await fetchLiquidatablePositions(
+    const liquidatablePositions = await fetchLiquidatablePositions(
       this.client,
-      this.chainAddresses.morpho,
-      this.chainAddresses.preLiquidationFactory,
       this.coveredMarkets,
     );
 
-    console.log("liquidatablePositions", liquidatablePositions);
-
-    await Promise.all([
-      ...liquidatablePositions.map((position) => this.liquidate(position)),
-      ...preLiquidatablePositions.map((position) => this.preLiquidate(position)),
-    ]);
+    await Promise.all(liquidatablePositions.map((position) => this.liquidate(position)));
   }
 
   private async liquidate(position: AccrualPosition) {
     const marketParams = position.market.params;
-    const seizableCollateral = this.decreaseSeizableCollateral(position.seizableCollateral!, false);
-
+    const seizableCollateral = position.seizableCollateral!;
     const badDebtPosition = seizableCollateral === position.collateral;
 
     if (!this.checkCooldown(MarketUtils.getMarketId(marketParams), position.user)) return;
@@ -123,7 +115,14 @@ export class LiquidationBot {
 
     const encoder = new LiquidationEncoder(executorAddress, client);
 
-    if (!(await this.convertCollateralToLoan(marketParams, seizableCollateral, encoder))) return;
+    if (
+      !(await this.convertCollateralToLoan(
+        marketParams,
+        this.decreaseSeizableCollateral(seizableCollateral, badDebtPosition),
+        encoder,
+      ))
+    )
+      return;
 
     encoder.erc20Approve(marketParams.loanToken, this.chainAddresses.morpho, maxUint256);
 

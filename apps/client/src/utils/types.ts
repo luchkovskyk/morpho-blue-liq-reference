@@ -1,4 +1,4 @@
-import type { AccrualPosition, IMarket, PreLiquidationParams, PreLiquidationPosition } from "@morpho-org/blue-sdk";
+import type { IMarketParams, PreLiquidationParams } from "@morpho-org/blue-sdk";
 import type { Address, Chain, Hex } from "viem";
 
 export interface ToConvert {
@@ -21,8 +21,10 @@ export interface PreLiquidationContract {
   preLiquidationParams: PreLiquidationParams;
 }
 
-export interface IndexerAPIResponse {
-  market: IMarket;
-  positionsLiq: AccrualPosition[];
-  positionsPreLiq: PreLiquidationPosition[];
-}
+export type LiquidatablePosition = {
+  marketId: Hex;
+  params: IMarketParams;
+  collateral: bigint;
+  borrowShares: bigint;
+  seizableCollateral: bigint;
+};

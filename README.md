@@ -9,7 +9,6 @@ A simple, fast, and easily deployable liquidation bot for the **Morpho Blue** pr
 ## Features
 
 - Automatically detects liquidatable positions and executes the liquidations.
-- Also supports Morpho Blue pre liquidations.
 - Multi-chain compatible.
 - Configurable liquidity venues.
 - Profit evaluation thanks to configurable pricers.
@@ -45,10 +44,6 @@ For each chain, here are the parameters that needs to be configured:
 ### Chain Wrapped Native Asset
 
 - `wNative`: The chain's wrapped native asset (ex: WETH's address on Ethereum mainnet).
-
-### Chain Max Block Range
-
-- `maxBlockRange`: The maximum `eth_getLogs` block range supported by your RPC for this chain.
 
 ### Options
 

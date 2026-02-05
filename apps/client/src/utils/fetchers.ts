@@ -1,6 +1,7 @@
 import type { Account, Address, Chain, Client, Hex, Transport } from "viem";
 import {
   AccrualPosition,
+  ChainId,
   MarketId,
   PreLiquidationParams,
   PreLiquidationPosition,
@@ -13,7 +14,8 @@ import { morphoBlueAbi } from "../abis/morpho/morphoBlue";
 import { preLiquidationFactoryAbi } from "../abis/morpho/preLiquidationFactory";
 import { PreLiquidationContract } from "./types";
 import { oracleAbi } from "../abis/morpho/oracle";
-import { metaMorphoAbi } from "@morpho-org/blue-sdk-viem";
+import { fetchMarket, metaMorphoAbi } from "@morpho-org/blue-sdk-viem";
+import { apiSdk } from "../api/index";
 
 export async function fetchMarketsForVaults(
   client: Client<Transport, Chain, Account>,
@@ -33,56 +35,63 @@ export async function fetchMarketsForVaults(
 
 export async function fetchLiquidatablePositions(
   client: Client<Transport, Chain, Account>,
-  morphoAddress: Address,
-  preLiquidationFactoryAddress: Address | undefined,
   marketIds: Hex[],
 ) {
   try {
-    const [borrowersByMarkets, preLiquidationContracts] = await Promise.all([
-      getBorrowers(client, morphoAddress, marketIds),
-      getPreLiquidationContracts(client, preLiquidationFactoryAddress, marketIds),
-    ]);
+    const positionsQuery = await apiSdk.getLiquidatablePositions({
+      chainId: client.chain.id,
+      marketIds,
+      skip: 0,
+      first: 100,
+    });
 
-    // TODO: these are fetched successfully, but the other fetches below (which do `eth_call`)
-    // are failing -- I think because they're not multicall'ed correctly.
-    console.log(borrowersByMarkets, preLiquidationContracts);
-    return {
-      liquidatablePositions: [],
-      preLiquidatablePositions: [],
-    };
+    const positions = positionsQuery.marketPositions.items?.filter(
+      (position) =>
+        position.market.uniqueKey !== undefined &&
+        position.market.oracle !== null &&
+        position.state !== null,
+    );
 
-    const positions = (
+    if (positions === undefined) return [];
+
+    const marketsMap = new Map(
       await Promise.all(
-        borrowersByMarkets.map(async (borrowersByMarket) => {
-          return getPositionsForMarket(
-            client,
-            borrowersByMarket.marketId,
-            borrowersByMarket.borrowers,
-          );
+        [...marketIds].map(async (marketId) => {
+          const market = await fetchMarket(marketId as MarketId, client, {
+            chainId: client.chain.id,
+            // Disable `deployless` so that viem multicall aggregates fetches
+            deployless: false,
+          });
+
+          return [marketId, market.accrueInterest(Time.timestamp())] as const;
         }),
-      )
-    ).flat();
-
-    const liquidatablePositions = positions.filter(
-      (position) => position.seizableCollateral !== undefined && position.seizableCollateral !== 0n,
-    );
-    const preLiquidatablePositions = await getPreLiquidatablePositions(
-      client,
-      preLiquidationContracts,
-      positions,
-      morphoAddress,
+      ),
     );
 
-    return {
-      liquidatablePositions: liquidatablePositions,
-      preLiquidatablePositions: preLiquidatablePositions,
-    };
+    const accruedPositions = (positions ?? [])
+      .map((position) => {
+        const market = marketsMap.get(position.market.uniqueKey);
+        if (!market) return;
+
+        const accrualPosition = new AccrualPosition(
+          {
+            user: position.user.address,
+            // NOTE: These come as strings when mocking GraphQL response in tests, so we cast manually
+            supplyShares: BigInt(position.state?.supplyShares ?? "0"),
+            borrowShares: BigInt(position.state?.borrowShares ?? "0"),
+            collateral: BigInt(position.state?.collateral ?? "0"),
+          },
+          market,
+        );
+
+        return accrualPosition;
+      })
+      .filter((position) => position !== undefined);
+
+    return accruedPositions.filter((position) => position.seizableCollateral !== undefined);
   } catch (error) {
     console.error(`Error fetching liquidatable positions: ${error}`);
-    return {
-      liquidatablePositions: [],
-      preLiquidatablePositions: [],
-    };
+    return [];
   }
 }
 
@@ -113,46 +122,6 @@ async function fetchVaultV1Markets(
   } catch (error) {
     console.error(`Error fetching vault v1 markets: ${error}`);
     return [];
-  }
-}
-
-async function getBorrowers(
-  client: Client<Transport, Chain, Account>,
-  morphoAddress: Address,
-  marketIds: Hex[],
-): Promise<{ marketId: Hex; borrowers: Address[] }[]> {
-  try {
-    const logs = await getLogs(client, {
-      address: morphoAddress,
-      event: morphoBlueAbi.find((entry) => entry.type === "event" && entry.name === "Borrow")!,
-      fromBlock: 18883124n, // TODO: get chain specific values
-    });
-
-    const uniqueBorrowersSet = new Set<{ address: Address; marketId: Hex }>();
-    for (const log of logs) {
-      if (log.args.onBehalf) {
-        uniqueBorrowersSet.add({
-          address: log.args.onBehalf as Address,
-          marketId: log.args.id as Hex,
-        });
-      }
-    }
-
-    const uniqueBorrowers = Array.from(uniqueBorrowersSet);
-
-    const borrowersByMarkets = marketIds.map((marketId) => {
-      const borrowers = uniqueBorrowers
-        .filter((borrower) => borrower.marketId === marketId)
-        .map((borrower) => borrower.address);
-      return {
-        marketId: marketId,
-        borrowers: borrowers,
-      };
-    });
-
-    return borrowersByMarkets;
-  } catch (error) {
-    throw new Error(`Error getting Borrow logs: ${error}`);
   }
 }
 
