@@ -2,9 +2,13 @@
 **/node_modules
 
 **/dist
+**/.cache
 
-# Ponder
-.ponder
+# Vendor
+**/vendor
+
+# Docker
+**/.dockerignore
 
 # Debug
 npm-debug.log*

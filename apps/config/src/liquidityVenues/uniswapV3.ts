@@ -1,5 +1,5 @@
 import type { Address } from "viem";
-import { base, unichain, katana, worldchain } from "viem/chains";
+import { arbitrum, base, katana, unichain, worldchain } from "viem/chains";
 
 import { hyperevm, monad } from "../chains";
 
@@ -15,6 +15,7 @@ export const specificFactoryAddresses: Record<number, Address> = {
   [worldchain.id]: "0x7a5028BDa40e7B173C278C5342087826455ea25a",
   [hyperevm.id]: "0xB1c0fa0B789320044A6F623cFe5eBda9562602E3",
   [monad.id]: "0x204faca1764b154221e35c0d20abb3c525710498",
+  [arbitrum.id]: "0x1F98431c8aD98523631AE4a59f267346ea31F984",
 };
 
 export const FEE_TIERS = [500, 3000, 10000];
