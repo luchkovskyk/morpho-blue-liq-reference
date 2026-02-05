@@ -1,6 +1,7 @@
+import { createSimpleInvalidation, logsCache, LogsCacheConfig } from "@morpho-org/viem-dlc";
 import { Chain, createWalletClient, Hex, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { createSimpleInvalidation, logsCache, LogsCacheConfig } from "@morpho-org/viem-dlc";
+
 import { createOptimizedNodeFsStore } from "./node-fs-store";
 
 const invalidationStrategy = createSimpleInvalidation();
@@ -14,7 +15,7 @@ const getDefaultConfig = (options?: {
   invalidationStrategy,
   store: createOptimizedNodeFsStore({
     base: process.env.LOCAL_CACHE_BASE_PATH ?? ".cache",
-    maxWritesPerSecond: 50,
+    maxWritesPerSecond: 2,
   }),
   logsDividerConfig: {
     maxBlockRange: options?.maxBlockRange ?? 10_000,

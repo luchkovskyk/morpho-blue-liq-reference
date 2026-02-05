@@ -43,6 +43,14 @@ export async function fetchLiquidatablePositions(
       getPreLiquidationContracts(client, preLiquidationFactoryAddress, marketIds),
     ]);
 
+    // TODO: these are fetched successfully, but the other fetches below (which do `eth_call`)
+    // are failing -- I think because they're not multicall'ed correctly.
+    console.log(borrowersByMarkets, preLiquidationContracts);
+    return {
+      liquidatablePositions: [],
+      preLiquidatablePositions: [],
+    };
+
     const positions = (
       await Promise.all(
         borrowersByMarkets.map(async (borrowersByMarket) => {
@@ -117,6 +125,7 @@ async function getBorrowers(
     const logs = await getLogs(client, {
       address: morphoAddress,
       event: morphoBlueAbi.find((entry) => entry.type === "event" && entry.name === "Borrow")!,
+      fromBlock: 18883124n, // TODO: get chain specific values
     });
 
     const uniqueBorrowersSet = new Set<{ address: Address; marketId: Hex }>();
