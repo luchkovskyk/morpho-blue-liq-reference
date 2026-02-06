@@ -29,7 +29,7 @@ COPY . .
 # - RAILWAY_DEPLOYMENT_ID
 
 # Declare the chain IDs we support as an environment variable for looping
-ENV CHAIN_IDS="1 130 8453 747474 42161 999 143"
+ENV CHAIN_IDS="1 10 130 8453 747474 42161 999 143"
 
 # Declare the non-dynamic vars so they are available at runtime
 ENV LIQUIDATION_PRIVATE_KEY=${LIQUIDATION_PRIVATE_KEY}
