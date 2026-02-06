@@ -83,7 +83,7 @@ export class LiquidationBot {
   private flashbotAccount?: LocalAccount;
   private coveredMarkets: Hex[] = [];
   private tenderlyConfig?: TenderlyConfig;
-  private alwaysRealizeBadDebt?: boolean;
+  private alwaysRealizeBadDebt: boolean;
 
   constructor(inputs: LiquidationBotInputs) {
     this.logTag = inputs.logTag;
@@ -100,6 +100,8 @@ export class LiquidationBot {
     this.positionLiquidationCooldownMechanism = inputs.positionLiquidationCooldownMechanism;
     this.marketsFetchingCooldownMechanism = inputs.marketsFetchingCooldownMechanism;
     this.flashbotAccount = inputs.flashbotAccount;
+    this.tenderlyConfig = inputs.tenderlyConfig;
+    this.alwaysRealizeBadDebt = inputs.alwaysRealizeBadDebt;
   }
 
   async run() {
