@@ -1,6 +1,7 @@
 import * as Sentry from "@sentry/node";
 import dotenv from "dotenv";
 import {
+  ALWAYS_REALIZE_BAD_DEBT,
   MARKETS_FETCHING_COOLDOWN_PERIOD,
   POSITION_LIQUIDATION_COOLDOWN_ENABLED,
   POSITION_LIQUIDATION_COOLDOWN_PERIOD,
@@ -116,6 +117,7 @@ export const launchBot = (config: ChainConfig) => {
     positionLiquidationCooldownMechanism,
     flashbotAccount,
     tenderlyConfig,
+    alwaysRealizeBadDebt: ALWAYS_REALIZE_BAD_DEBT,
   };
 
   const bot = new LiquidationBot(inputs);

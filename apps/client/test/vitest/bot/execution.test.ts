@@ -61,6 +61,7 @@ describe("execute liquidation swapping on Uniswap V3", () => {
       marketsFetchingCooldownMechanism: new MarketsFetchingCooldownMechanism(
         MARKETS_FETCHING_COOLDOWN_PERIOD,
       ),
+      alwaysRealizeBadDebt: false,
     });
 
     await bot.run();
@@ -126,6 +127,7 @@ describe("execute liquidation swapping on Uniswap V3", () => {
         marketsFetchingCooldownMechanism: new MarketsFetchingCooldownMechanism(
           MARKETS_FETCHING_COOLDOWN_PERIOD,
         ),
+        alwaysRealizeBadDebt: false,
       });
 
       await bot.run();
@@ -199,6 +201,7 @@ describe("execute liquidation combining Pendle PT and 1inch liquidity venues", (
       marketsFetchingCooldownMechanism: new MarketsFetchingCooldownMechanism(
         MARKETS_FETCHING_COOLDOWN_PERIOD,
       ),
+      alwaysRealizeBadDebt: false,
     });
 
     // mock pendle api
