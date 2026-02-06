@@ -1,4 +1,4 @@
-import { arbitrum, base, katana, mainnet, unichain, worldchain } from "viem/chains";
+import { arbitrum, base, katana, mainnet, optimism, unichain, worldchain } from "viem/chains";
 
 import { hyperevm, monad } from "./chains";
 import type { Config } from "./types";
@@ -19,18 +19,12 @@ export const chainConfigs: Record<number, Config> = {
     chain: mainnet,
     wNative: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
     options: {
-      vaultWhitelist: [
-        "0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB",
-        "0x8eB67A509616cd6A7c1B3c8C21D48FF57df3d458",
-      ],
-      additionalMarketsWhitelist: [
-        "0x1eda1b67414336cab3914316cb58339ddaef9e43f939af1fed162a989c98bc20",
-        "0xff527fe9c6516f9d82a3d51422ccb031d123266e6e26d4c22c942a948c180a75",
-      ],
-      checkProfit: false,
+      vaultWhitelist: "morpho-api",
+      additionalMarketsWhitelist: [],
+      checkProfit: true,
       liquidationBufferBps: 50,
       useFlashbots: true,
-      blockInterval: 2,
+      blockInterval: 10,
       useTenderly: true,
     },
   },
@@ -43,7 +37,7 @@ export const chainConfigs: Record<number, Config> = {
       checkProfit: false,
       liquidationBufferBps: 50,
       useFlashbots: false,
-      blockInterval: 10,
+      blockInterval: 50,
       useTenderly: true,
     },
   },
@@ -86,24 +80,6 @@ export const chainConfigs: Record<number, Config> = {
       useTenderly: true,
     },
   },
-  [worldchain.id]: {
-    chain: worldchain,
-    wNative: "0x4200000000000000000000000000000000000006",
-    options: {
-      vaultWhitelist: [
-        "0xb1E80387EbE53Ff75a89736097D34dC8D9E9045B", // Re7 USDC
-        "0x348831b46876d3dF2Db98BdEc5E3B4083329Ab9f", // Re7 WLD
-        "0xBC8C37467c5Df9D50B42294B8628c25888BECF61", // Re7 WETH
-        "0xBC8C37467c5Df9D50B42294B8628c25888BECF61", // Re7 WBTC
-      ],
-      additionalMarketsWhitelist: [],
-      checkProfit: false,
-      liquidationBufferBps: 50,
-      useFlashbots: false,
-      blockInterval: 5,
-      useTenderly: true,
-    },
-  },
   [hyperevm.id]: {
     chain: worldchain,
     wNative: "0x5555555555555555555555555555555555555555",
@@ -127,6 +103,19 @@ export const chainConfigs: Record<number, Config> = {
       liquidationBufferBps: 50,
       useFlashbots: false,
       blockInterval: 10,
+      useTenderly: true,
+    },
+  },
+  [optimism.id]: {
+    chain: optimism,
+    wNative: "0x4200000000000000000000000000000000000006",
+    options: {
+      vaultWhitelist: "morpho-api",
+      additionalMarketsWhitelist: [],
+      checkProfit: false,
+      liquidationBufferBps: 50,
+      useFlashbots: false,
+      blockInterval: 5,
       useTenderly: true,
     },
   },

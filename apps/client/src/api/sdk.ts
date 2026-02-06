@@ -40,16 +40,31 @@ export const GetLiquidatablePositionsDocument = gql`
 }
     `;
 
+export const GetChainsDocument = gql`
+  query getChains {
+    chains {
+      id
+    }
+  }
+`;
+
 export type SdkFunctionWrapper = <T>(action: (requestHeaders?:Record<string, string>) => Promise<T>, operationName: string, operationType?: string, variables?: any) => Promise<T>;
 
 
 const defaultWrapper: SdkFunctionWrapper = (action, _operationName, _operationType, _variables) => action();
 
+export type GetChainsQuery = {
+  chains: { id: number }[];
+};
+
 export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = defaultWrapper) {
   return {
     getLiquidatablePositions(variables: Types.GetLiquidatablePositionsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.GetLiquidatablePositionsQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<Types.GetLiquidatablePositionsQuery>({ document: GetLiquidatablePositionsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'getLiquidatablePositions', 'query', variables);
-    }
+    },
+    getChains(requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetChainsQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<GetChainsQuery>({ document: GetChainsDocument, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'getChains', 'query', undefined);
+    },
   };
 }
 export type Sdk = ReturnType<typeof getSdk>;

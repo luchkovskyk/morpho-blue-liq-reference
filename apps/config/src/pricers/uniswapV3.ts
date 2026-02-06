@@ -1,5 +1,14 @@
 import type { Address } from "viem";
-import { base, mainnet, arbitrum, unichain, polygon, worldchain, katana } from "viem/chains";
+import {
+  base,
+  mainnet,
+  arbitrum,
+  unichain,
+  polygon,
+  worldchain,
+  katana,
+  optimism,
+} from "viem/chains";
 
 import { hyperevm, monad } from "../chains";
 
@@ -13,4 +22,5 @@ export const USD_REFERENCE: Record<number, Address> = {
   [hyperevm.id]: "0xb88339CB7199b77E23DB6E890353E22632Ba630f",
   [worldchain.id]: "0x79A02482A880bCE3F13e09Da970dC34db4CD24d1",
   [monad.id]: "0x754704Bc059F8C67012fEd69BC8A327a5aafb603",
+  [optimism.id]: "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85",
 };

@@ -1,5 +1,5 @@
 import type { Address } from "viem";
-import { arbitrum, base, katana, mainnet, unichain, worldchain } from "viem/chains";
+import { arbitrum, base, katana, mainnet, optimism, unichain, worldchain } from "viem/chains";
 
 import { hyperevm, monad } from "../chains";
 
@@ -12,4 +12,5 @@ export const wrappers: Record<number, Record<Address, Address>> = {
   [unichain.id]: {},
   [worldchain.id]: {},
   [hyperevm.id]: {},
+  [optimism.id]: {},
 };

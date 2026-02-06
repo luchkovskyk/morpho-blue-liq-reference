@@ -12,4 +12,5 @@ export const supportedNetworks: number[] = [
   polygon.id,
   arbitrum.id,
   unichain.id,
+  optimism.id,
 ];
