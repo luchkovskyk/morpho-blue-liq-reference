@@ -68,7 +68,7 @@ export class LiquidationBot {
   private pricers?: Pricer[];
   private cooldownMechanism?: CooldownMechanism;
   private flashbotAccount?: LocalAccount;
-  private alwaysRealizeBadDebt?: boolean;
+  private alwaysRealizeBadDebt: boolean;
 
   constructor(inputs: LiquidationBotInputs) {
     this.logTag = inputs.logTag;
