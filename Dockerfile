@@ -35,10 +35,6 @@ ENV CHAIN_IDS="1 10 130 8453 747474 42161 999 143"
 ENV LIQUIDATION_PRIVATE_KEY=${LIQUIDATION_PRIVATE_KEY}
 ENV RAILWAY_DEPLOYMENT_ID=${RAILWAY_DEPLOYMENT_ID}
 
-# Create cache directory and declare it as a volume to persist between runs
-RUN mkdir -p .cache
-VOLUME ["/app/.cache"]
-
 # Build the .env file dynamically at container start
 CMD ["sh", "-lc", "{ \
   for CHAIN in $CHAIN_IDS; do \
