@@ -28,7 +28,16 @@ export const chainConfigs: Record<number, Config> = {
         "0x1eda1b67414336cab3914316cb58339ddaef9e43f939af1fed162a989c98bc20",
         "0xff527fe9c6516f9d82a3d51422ccb031d123266e6e26d4c22c942a948c180a75",
       ],
-      checkProfit: false,
+      liquidityVenues: [
+        "pendlePT",
+        "midas",
+        "1inch",
+        "erc20Wrapper",
+        "erc4626",
+        "uniswapV3",
+        "uniswapV4",
+      ],
+      pricers: ["defillama", "chainlink", "uniswapV3"],
       liquidationBufferBps: 50,
       useFlashbots: true,
       blockInterval: 2,
@@ -40,7 +49,16 @@ export const chainConfigs: Record<number, Config> = {
     options: {
       vaultWhitelist: ["0xbeeF010f9cb27031ad51e3333f9aF9C6B1228183"],
       additionalMarketsWhitelist: [],
-      checkProfit: false,
+      liquidityVenues: [
+        "pendlePT",
+        "midas",
+        "1inch",
+        "erc20Wrapper",
+        "erc4626",
+        "uniswapV3",
+        "uniswapV4",
+      ],
+      pricers: ["defillama", "chainlink", "uniswapV3"],
       liquidationBufferBps: 50,
       useFlashbots: false,
       blockInterval: 10,
@@ -52,7 +70,7 @@ export const chainConfigs: Record<number, Config> = {
     options: {
       vaultWhitelist: "morpho-api",
       additionalMarketsWhitelist: [],
-      checkProfit: false,
+      liquidityVenues: ["1inch", "erc20Wrapper", "erc4626", "uniswapV3", "uniswapV4"],
       liquidationBufferBps: 50,
       useFlashbots: false,
       blockInterval: 5,
@@ -64,7 +82,7 @@ export const chainConfigs: Record<number, Config> = {
     options: {
       vaultWhitelist: "morpho-api",
       additionalMarketsWhitelist: [],
-      checkProfit: false,
+      liquidityVenues: ["erc20Wrapper", "erc4626", "uniswapV3", "uniswapV4"],
       liquidationBufferBps: 50,
       useFlashbots: false,
       blockInterval: 5,
@@ -76,7 +94,7 @@ export const chainConfigs: Record<number, Config> = {
     options: {
       vaultWhitelist: "morpho-api",
       additionalMarketsWhitelist: [],
-      checkProfit: false,
+      liquidityVenues: ["pendlePT", "1inch", "erc20Wrapper", "erc4626", "uniswapV3", "uniswapV4"],
       liquidationBufferBps: 50,
       useFlashbots: false,
     },
@@ -92,7 +110,7 @@ export const chainConfigs: Record<number, Config> = {
         "0xBC8C37467c5Df9D50B42294B8628c25888BECF61", // Re7 WBTC
       ],
       additionalMarketsWhitelist: [],
-      checkProfit: false,
+      liquidityVenues: ["erc20Wrapper", "erc4626", "uniswapV3", "uniswapV4"],
       liquidationBufferBps: 50,
       useFlashbots: false,
       blockInterval: 5,
@@ -107,8 +125,8 @@ export const chainConfigs: Record<number, Config> = {
         "0xFc5126377F0efc0041C0969Ef9BA903Ce67d151e", // Felix USDT
         "0x2900ABd73631b2f60747e687095537B673c06A76", // Felix HYPE
       ],
+      liquidityVenues: ["liquidSwap", "erc20Wrapper", "erc4626", "uniswapV3"],
       additionalMarketsWhitelist: [],
-      checkProfit: false,
       liquidationBufferBps: 50,
       useFlashbots: false,
     },
@@ -119,7 +137,7 @@ export const chainConfigs: Record<number, Config> = {
     options: {
       vaultWhitelist: "morpho-api",
       additionalMarketsWhitelist: [],
-      checkProfit: false,
+      liquidityVenues: ["erc20Wrapper", "erc4626", "uniswapV3"],
       liquidationBufferBps: 50,
       useFlashbots: false,
       blockInterval: 10,
