@@ -59,11 +59,15 @@ For each chain, here are the parameters that needs to be configured:
 
 ⚠️: These whitelists can't both be empty at the same time.
 
-**Profit Check**: If set, this parameter makes sure to only execute profitable liquidate (including gas costs). This requires to use pricers supported on the configured chains.
+**Liquidity venues**:
 
-- `options.checkProfit`: `true` if you want to check liquidations profit. `false` otherwise.
+- `options.liquidityVenues`: Array of liquidity venue names for this chain. The order of the array is the order in which venues will be tried.
 
-⚠️: If set to true, each confirgured chain should support at least one of the pricers used by the bot.
+**Pricers (optional)**:
+
+- `options.pricers`: Array of pricer names for this chain. The order is the fallback order when pricing assets. Leave undefined or set to an empty array to disable profit check for this chain (the bot will then execute liquidations without checking profitability). If set, the bot will only execute liquidations that are profitable (including gas costs).
+
+⚠️: To enable profit check for this chain, `options.pricers` must be set to an non-empty array. To disable, you can leave it undefined or set it to an empty array.
 
 **Treasury Address (optional)**: If set, the profit of the liquidation will be sent to this address at the end of the transaction. If not set, the bot's EOA will be used.
 
@@ -119,7 +123,7 @@ For example, the `uniswapV3` venue has different factory addresses for some chai
 
 ### Pricers Configuration
 
-Pricers are explained [below](#pricers). **Pricers are optional**, and don't need to be configured if `options.checkProfit` is set to `false` for every configured chains.
+Pricers are explained [below](#pricers). **Pricers are optional**, and don't need to be configured if `options.pricers` is undefined or an empty array for every configured chain.
 
 Some pricers require chain-specific configuration. This is done in the `apps/config/src/pricers/` folder.
 
@@ -181,15 +185,17 @@ Liquidity venues can be combined to create more complex strategies. For example,
 
 **If you don't plan on supporting a new liquidity venue, you can ignore this section.**
 
-To add your own venue, you need to create a new folder in the `apps/client/src/liquidityVenues` folder.
-This folder should contain one `index.ts` file. In this file you will implement the new liquidity venue class that needs to implements the `LiquidityVenue` interface (located in `apps/client/src/liquidityVenues/liquidityVenue.ts`).
-This class will contain the logic of the venue, and needs to export two methods: `supportsRoute`(Returns true if the venue if pair of tokens `src` and `dst` is supported by the venue) and `convert`(Encodes the calls to the related contracts and pushes them to the encoder, and returns the new `src`, `dst`, and `srcAmount`). Both these methods can be async (to allow onchain calls).
+To add your own venue:
 
-- If your venue needs any abi, you may add it to a new file named after the venue in the `apps/client/src/abis` folder.
+1. Create a new folder in the `apps/client/src/liquidityVenues` folder. This folder should contain one `index.ts` file. In this file you will implement the new liquidity venue class that implements the `LiquidityVenue` interface (located in `apps/client/src/liquidityVenues/liquidityVenue.ts`). This class will contain the logic of the venue, and needs to export two methods: `supportsRoute` (returns true if the venue supports the pair of tokens `src` and `dst`) and `convert` (encodes the calls to the related contracts and pushes them to the encoder, and returns the new `src`, `dst`, and `srcAmount`). Both these methods can be async (to allow onchain and offchain calls).
+2. Add the new venue name to the `LiquidityVenueName` type in `apps/config/src/types.ts`.
+3. Add a case for the new venue in the `createLiquidityVenue` function in `apps/client/src/liquidityVenues/factory.ts`.
+
+- If your venue needs any ABI, you may add it to a new file named after the venue in the `apps/client/src/abis` folder.
 
 ### Configuration
 
-If your venue requires chain-specific configuration, you need to add create a new file in the `apps/config/src/liquidityVenues` folder, named like the venue (e.g. `uniswapV3.ts`).
+If your venue requires chain-specific configuration, create a new file in the `apps/config/src/liquidityVenues` folder, named like the venue (e.g. `uniswapV3.ts`).
 
 However, some venues don't need any configuration (ex: erc4626).
 
@@ -210,13 +216,12 @@ The bot supports multiple pricers through a fallback mechanism. When attempting 
 
 - It iterates through the list of pricers in the order they were provided.
 - If a pricer does not support the chain or cannot price the asset, the bot moves to the next pricer.
-- It iterates through the list of pricers in the order they were provided.
 
 This continues until a compatible pricer is found, or until the end of the list is reached.
 
 ### Profit Check
 
-The bot can evaluate the profitability of a liquidation on a given chain only if `options.checkProfit` has been set to `true` (for this chain)d and at least one pricer has been provided.
+The bot can evaluate the profitability of a liquidation on a given chain only if `options.pricers` is set and non-empty for that chain.
 
 In that case, for every liquidatable position detected, the bot will try to price in USD both the liquidation premium (in loan asset) and the gas expense of the transaction.
 
@@ -226,31 +231,25 @@ If either asset involved in the liquidation cannot be priced (i.e., not supporte
 
 ### Configuration
 
-If your pricer requires chain-specific configuration, you need to add create a new file in the `apps/config/src/pricers` folder, named like the pricer (e.g. `uniswapV3.ts`).
+If your pricer requires chain-specific configuration, create a new file in the `apps/config/src/pricers` folder, named like the pricer (e.g. `uniswapV3.ts`).
 
 However, some pricers don't need any configuration (ex: `MorphoApi`).
 
 ## Add your own pricer
 
-**If you don't plan on supporting a new pricer venue, you can ignore this section.**
+**If you don't plan on supporting a new pricer, you can ignore this section.**
 
-To add your own pricer, you need to create a new folder in the `apps/client/src/pricers` folder.
-This folder should contain one `index.ts` file. In this file you will implement the new pricer class that needs to implements the `Pricer` interface (located in `apps/client/src/pricers/Pricer.ts`).
-This class will contain the logic of the pricer, and needs to export one method: `price`(Returns the price of the given asset in USD, or `undefined` if the asset is not supported). This methods can be async.
+To add your own pricer:
 
-- If your pricer needs any abi, you may add it to a new file named after the pricer in the `apps/client/src/abis` folder.
+1. Create a new folder in the `apps/client/src/pricers` folder. This folder should contain one `index.ts` file. In this file you will implement the new pricer class that implements the `Pricer` interface (located in `apps/client/src/pricers/Pricer.ts`). This class will contain the logic of the pricer, and needs to export one method: `price` (returns the price of the given asset in USD, or `undefined` if the asset is not supported). This method can be async.
+2. Add the new pricer name to the `PricerName` type in `apps/config/src/types.ts`.
+3. Add a case for the new pricer in the `createPricer` function in `apps/client/src/pricers/factory.ts`.
 
-## Order the liquidity venues
+- If your pricer needs any ABI, you may add it to a new file named after the pricer in the `apps/client/src/abis` folder.
 
-The liquidity venues must be imported into the `apps/client/src/index.ts` file and pushed into the `liquidityVenues` array.
-Be careful with the order of the array, as it will be the order in which the venues will be used by the bot.
+## Liquidity venues and pricers order (per chain)
 
-## Order the pricers
-
-**If you don't want to check for liquidation profit, you can ignore this section.**
-
-The pricers must be imported into the `apps/client/src/index.ts` file and pushed into the `pricers` array.
-Be careful with the order of the array, as it will be the order in which the pricers will be used by the bot.
+The choice and ordering of liquidity venues and pricers is configured **per chain** in `apps/config/config.ts`. For each chain entry in `chainConfigs`, set `options.liquidityVenues` (array of venue names) and optionally `options.pricers` (array of pricer names, or undefined/empty to disable profit check). The order of each array is the order in which venues or pricers will be used. See [Liquidity Venues Configuration](#liquidity-venues-configuration) and [Pricers Configuration](#pricers-configuration) for chain-specific settings (e.g. factory addresses).
 
 ## Run the bot
 

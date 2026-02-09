@@ -36,7 +36,10 @@ export async function fetchLiquidatablePositions(
   morphoAddress: Address,
   preLiquidationFactoryAddress: Address | undefined,
   marketIds: Hex[],
-) {
+): Promise<{
+  liquidatablePositions: AccrualPosition[];
+  preLiquidatablePositions: PreLiquidationPosition[];
+}> {
   try {
     const [borrowersByMarkets, preLiquidationContracts] = await Promise.all([
       getBorrowers(client, morphoAddress, marketIds),
