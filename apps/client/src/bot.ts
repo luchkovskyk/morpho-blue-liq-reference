@@ -1,4 +1,4 @@
-import { ALWAYS_REALIZE_BAD_DEBT, chainConfigs } from "@morpho-blue-liquidation-bot/config";
+import { chainConfigs } from "@morpho-blue-liquidation-bot/config";
 import { type IMarket, type IMarketParams, MarketUtils } from "@morpho-org/blue-sdk";
 import { executorAbi } from "executooor-viem";
 import {
@@ -28,6 +28,7 @@ import type { Pricer } from "./pricers/pricer.js";
 import { CooldownMechanism } from "./utils/cooldownMechanism.js";
 import { fetchWhitelistedVaults } from "./utils/fetch-whitelisted-vaults.js";
 import { fetchLiquidatablePositions, fetchMarketsForVaults } from "./utils/fetchers.js";
+import { Flashbots } from "./utils/flashbots.js";
 import { LiquidationEncoder } from "./utils/LiquidationEncoder.js";
 import { DEFAULT_LIQUIDATION_BUFFER_BPS, WAD, wMulDown } from "./utils/maths.js";
 import type {
@@ -35,7 +36,6 @@ import type {
   LiquidatablePosition,
   PreLiquidatablePosition,
 } from "./utils/types.js";
-import { Flashbots } from "./utils/flashbots.js";
 
 export interface LiquidationBotInputs {
   logTag: string;
@@ -48,6 +48,7 @@ export interface LiquidationBotInputs {
   executorAddress: Address;
   treasuryAddress: Address;
   liquidityVenues: LiquidityVenue[];
+  alwaysRealizeBadDebt: boolean;
   pricers?: Pricer[];
   cooldownMechanism?: CooldownMechanism;
   flashbotAccount?: LocalAccount;
@@ -67,6 +68,7 @@ export class LiquidationBot {
   private pricers?: Pricer[];
   private cooldownMechanism?: CooldownMechanism;
   private flashbotAccount?: LocalAccount;
+  private alwaysRealizeBadDebt: boolean;
 
   constructor(inputs: LiquidationBotInputs) {
     this.logTag = inputs.logTag;
@@ -82,6 +84,7 @@ export class LiquidationBot {
     this.pricers = inputs.pricers;
     this.cooldownMechanism = inputs.cooldownMechanism;
     this.flashbotAccount = inputs.flashbotAccount;
+    this.alwaysRealizeBadDebt = inputs.alwaysRealizeBadDebt;
   }
 
   async run() {
@@ -284,11 +287,12 @@ export class LiquidationBot {
         },
       ]);
 
-      return await Flashbots.sendRawBundle(
+      await Flashbots.sendRawBundle(
         signedBundle,
         (await getBlockNumber(this.client)) + 1n,
         this.flashbotAccount,
       );
+      return;
     } else {
       await writeContract(this.client, { address: encoder.address, ...functionData });
     }
@@ -356,7 +360,7 @@ export class LiquidationBot {
     },
     badDebtPosition: boolean,
   ) {
-    if (ALWAYS_REALIZE_BAD_DEBT && badDebtPosition) return true;
+    if (this.alwaysRealizeBadDebt && badDebtPosition) return true;
     if (this.pricers === undefined || this.pricers.length === 0) return true;
 
     if (loanAssetBalance.beforeTx === undefined || loanAssetBalance.afterTx === undefined)

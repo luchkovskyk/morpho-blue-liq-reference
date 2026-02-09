@@ -1,4 +1,4 @@
-import type { ChainConfig } from "@morpho-blue-liquidation-bot/config";
+import { ALWAYS_REALIZE_BAD_DEBT, type ChainConfig } from "@morpho-blue-liquidation-bot/config";
 import { createWalletClient, Hex, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { watchBlocks } from "viem/actions";
@@ -53,6 +53,7 @@ export const launchBot = (config: ChainConfig) => {
     liquidityVenues,
     pricers,
     flashbotAccount,
+    alwaysRealizeBadDebt: ALWAYS_REALIZE_BAD_DEBT,
   };
 
   const bot = new LiquidationBot(inputs);
