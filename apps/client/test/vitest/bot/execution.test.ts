@@ -59,6 +59,7 @@ describe("execute liquidation swapping on Uniswap V3", () => {
       treasuryAddress: client.account.address,
       liquidityVenues: [erc4626, uniswapV3],
       pricers: [pricer],
+      alwaysRealizeBadDebt: false,
     });
 
     await bot.run();
@@ -122,6 +123,7 @@ describe("execute liquidation swapping on Uniswap V3", () => {
         treasuryAddress: client.account.address,
         liquidityVenues: [erc4626, uniswapV3],
         pricers: [pricer],
+        alwaysRealizeBadDebt: false,
       });
 
       await bot.run();
@@ -193,6 +195,7 @@ describe("execute liquidation combining Pendle PT and 1inch liquidity venues", (
       executorAddress: encoder.address,
       treasuryAddress: client.account.address,
       liquidityVenues: [pendlePT, oneInch],
+      alwaysRealizeBadDebt: false,
     });
 
     // mock pendle api
