@@ -470,7 +470,7 @@ export class LiquidationBot {
     badDebtPosition: boolean,
   ) {
     if (this.alwaysRealizeBadDebt && badDebtPosition) return true;
-    if (this.pricers === undefined) return true;
+    if (this.pricers === undefined || this.pricers.length === 0) return true;
 
     if (loanAssetBalance.beforeTx === undefined || loanAssetBalance.afterTx === undefined)
       return false;
