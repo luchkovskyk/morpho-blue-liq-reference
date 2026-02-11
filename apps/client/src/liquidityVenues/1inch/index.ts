@@ -1,12 +1,16 @@
 import { API_BASE_URL, slippage, supportedNetworks } from "@morpho-blue-liquidation-bot/config";
-import { ExecutorEncoder } from "executooor-viem";
-import { LiquidityVenue } from "../liquidityVenue";
-import { Address } from "viem";
-import { ToConvert } from "../../utils/types";
 import { BigIntish } from "@morpho-org/blue-sdk";
+import { ExecutorEncoder } from "executooor-viem";
+import { Address } from "viem";
+
+import { RateLimiter } from "../../utils/rateLimiter";
+import { ToConvert } from "../../utils/types";
+import { LiquidityVenue } from "../liquidityVenue";
+
 import { SwapParams, SwapResponse } from "./types";
 
 export class OneInch implements LiquidityVenue {
+  private static rateLimiter = new RateLimiter(Number(process.env.ONEINCH_RPS ?? 10), 1000);
   private apiKey: string | undefined;
 
   constructor() {
@@ -66,9 +70,11 @@ export class OneInch implements LiquidityVenue {
           url.searchParams.set(key, (Number(value) / 100).toString(10));
           break;
         default:
-          url.searchParams.set(key, value);
+          url.searchParams.set(key, String(value));
       }
     });
+
+    await OneInch.rateLimiter.acquire();
 
     const res = await fetch(url, {
       headers: {

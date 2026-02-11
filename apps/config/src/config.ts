@@ -1,58 +1,12 @@
-import { arbitrum, base, katana, mainnet, unichain, worldchain } from "viem/chains";
+import { base } from "viem/chains";
 
-import { hyperevm, monad } from "./chains";
 import type { Config } from "./types";
 
-export const COOLDOWN_ENABLED = false; // true if you want to enable the cooldown mechanism
-export const COOLDOWN_PERIOD = 60 * 60; // 1 hour
+export const COOLDOWN_ENABLED = true;
+export const COOLDOWN_PERIOD = 5 * 60; // 5 minutes
 export const ALWAYS_REALIZE_BAD_DEBT = false; // true if you want to always realize bad debt
 
 export const chainConfigs: Record<number, Config> = {
-  [mainnet.id]: {
-    chain: mainnet,
-    morpho: {
-      address: "0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb",
-      startBlock: 18883124,
-    },
-    adaptiveCurveIrm: {
-      address: "0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC",
-      startBlock: 18883124,
-    },
-    metaMorphoFactories: {
-      addresses: [
-        "0x1897A8997241C1cD4bD0698647e4EB7213535c24",
-        "0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101",
-      ],
-      startBlock: 18925584,
-    },
-    preLiquidationFactory: {
-      address: "0x6FF33615e792E35ed1026ea7cACCf42D9BF83476",
-      startBlock: 21414664,
-    },
-    wNative: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-    options: {
-      vaultWhitelist: [
-        "0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB",
-        "0x8eB67A509616cd6A7c1B3c8C21D48FF57df3d458",
-      ],
-      additionalMarketsWhitelist: [
-        "0x1eda1b67414336cab3914316cb58339ddaef9e43f939af1fed162a989c98bc20",
-      ],
-      liquidityVenues: [
-        "pendlePT",
-        "midas",
-        "1inch",
-        "erc20Wrapper",
-        "erc4626",
-        "uniswapV3",
-        "uniswapV4",
-      ],
-      pricers: ["defillama", "chainlink", "uniswapV3"],
-      liquidationBufferBps: 50,
-      useFlashbots: true,
-      blockInterval: 2,
-    },
-  },
   [base.id]: {
     chain: base,
     morpho: {
@@ -76,178 +30,13 @@ export const chainConfigs: Record<number, Config> = {
     },
     wNative: "0x4200000000000000000000000000000000000006",
     options: {
-      vaultWhitelist: ["0xbeeF010f9cb27031ad51e3333f9aF9C6B1228183"],
-      additionalMarketsWhitelist: [],
-      liquidityVenues: [
-        "pendlePT",
-        "midas",
-        "1inch",
-        "erc20Wrapper",
-        "erc4626",
-        "uniswapV3",
-        "uniswapV4",
-      ],
-      pricers: ["defillama", "chainlink", "uniswapV3"],
-      liquidationBufferBps: 50,
-      useFlashbots: false,
-      blockInterval: 10,
-    },
-  },
-  [unichain.id]: {
-    chain: unichain,
-    morpho: { address: "0x8f5ae9CddB9f68de460C77730b018Ae7E04a140A", startBlock: 9139027 },
-    adaptiveCurveIrm: {
-      address: "0x9a6061d51743B31D2c3Be75D83781Fa423f53F0E",
-      startBlock: 9139027,
-    },
-    metaMorphoFactories: {
-      addresses: ["0xe9EdE3929F43a7062a007C3e8652e4ACa610Bdc0"],
-      startBlock: 9316789,
-    },
-    preLiquidationFactory: {
-      address: "0xb04e4D3D59Ee47Ca9BA192707AF13A7D02969911",
-      startBlock: 9381237,
-    },
-    wNative: "0x4200000000000000000000000000000000000006",
-    options: {
       vaultWhitelist: "morpho-api",
       additionalMarketsWhitelist: [],
-      liquidityVenues: ["1inch", "erc20Wrapper", "erc4626", "uniswapV3", "uniswapV4"],
+      liquidityVenues: ["erc20Wrapper", "erc4626", "uniswapV3", "uniswapV4", "1inch"],
+      pricers: ["chainlink", "defillama", "uniswapV3"],
       liquidationBufferBps: 50,
       useFlashbots: false,
-      blockInterval: 5,
-    },
-  },
-  [katana.id]: {
-    chain: katana,
-    morpho: { address: "0xD50F2DffFd62f94Ee4AEd9ca05C61d0753268aBc", startBlock: 2741069 },
-    adaptiveCurveIrm: {
-      address: "0x4F708C0ae7deD3d74736594C2109C2E3c065B428",
-      startBlock: 2741069,
-    },
-    metaMorphoFactories: {
-      addresses: ["0x1c8De6889acee12257899BFeAa2b7e534de32E16"],
-      startBlock: 2741420,
-    },
-    preLiquidationFactory: {
-      address: "0x678EB53A3bB79111263f47B84989d16D81c36D85",
-      startBlock: 2741993,
-    },
-    wNative: "0xEE7D8BCFb72bC1880D0Cf19822eB0A2e6577aB62",
-    options: {
-      vaultWhitelist: "morpho-api",
-      additionalMarketsWhitelist: [],
-      liquidityVenues: ["erc20Wrapper", "erc4626", "uniswapV3", "uniswapV4"],
-      liquidationBufferBps: 50,
-      useFlashbots: false,
-      blockInterval: 5,
-    },
-  },
-  [arbitrum.id]: {
-    chain: arbitrum,
-    morpho: { address: "0x6c247b1F6182318877311737BaC0844bAa518F5e", startBlock: 296446593 },
-    adaptiveCurveIrm: {
-      address: "0x66F30587FB8D4206918deb78ecA7d5eBbafD06DA",
-      startBlock: 296446593,
-    },
-    metaMorphoFactories: {
-      addresses: ["0x878988f5f561081deEa117717052164ea1Ef0c82"],
-      startBlock: 296446593,
-    },
-    preLiquidationFactory: {
-      address: "0x635c31B5DF1F7EFbCbC07E302335Ef4230758e3d",
-      startBlock: 307326238,
-    },
-    wNative: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
-    options: {
-      vaultWhitelist: "morpho-api",
-      additionalMarketsWhitelist: [],
-      liquidityVenues: ["pendlePT", "1inch", "erc20Wrapper", "erc4626", "uniswapV3", "uniswapV4"],
-      liquidationBufferBps: 50,
-      useFlashbots: false,
-    },
-  },
-  [worldchain.id]: {
-    chain: worldchain,
-    morpho: { address: "0xE741BC7c34758b4caE05062794E8Ae24978AF432", startBlock: 9025669 },
-    adaptiveCurveIrm: {
-      address: "0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5",
-      startBlock: 9025669,
-    },
-    metaMorphoFactories: {
-      addresses: ["0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5"],
-      startBlock: 9025733,
-    },
-    preLiquidationFactory: {
-      address: "0xe3cE2051a24e58DBFC0eFBe4c2d9e89c5eAe4695",
-      startBlock: 10273494,
-    },
-    wNative: "0x4200000000000000000000000000000000000006",
-    options: {
-      vaultWhitelist: [
-        "0xb1E80387EbE53Ff75a89736097D34dC8D9E9045B", // Re7 USDC
-        "0x348831b46876d3dF2Db98BdEc5E3B4083329Ab9f", // Re7 WLD
-        "0xBC8C37467c5Df9D50B42294B8628c25888BECF61", // Re7 WETH
-        "0xBC8C37467c5Df9D50B42294B8628c25888BECF61", // Re7 WBTC
-      ],
-      additionalMarketsWhitelist: [],
-      liquidityVenues: ["erc20Wrapper", "erc4626", "uniswapV3", "uniswapV4"],
-      liquidationBufferBps: 50,
-      useFlashbots: false,
-      blockInterval: 5,
-    },
-  },
-  [hyperevm.id]: {
-    chain: hyperevm,
-    morpho: { address: "0x68e37dE8d93d3496ae143F2E900490f6280C57cD", startBlock: 1988429 },
-    adaptiveCurveIrm: {
-      address: "0xD4a426F010986dCad727e8dd6eed44cA4A9b7483",
-      startBlock: 1988429,
-    },
-    metaMorphoFactories: {
-      addresses: ["0xec051b19d654C48c357dC974376DeB6272f24e53"],
-      startBlock: 1988677,
-    },
-    preLiquidationFactory: {
-      address: "0x1b6782Ac7A859503cE953FBf4736311CC335B8f0",
-      startBlock: 1988956,
-    },
-    wNative: "0x5555555555555555555555555555555555555555",
-    options: {
-      vaultWhitelist: [
-        "0x8A862fD6c12f9ad34C9c2ff45AB2b6712e8CEa27", // Felix USDC
-        "0xFc5126377F0efc0041C0969Ef9BA903Ce67d151e", // Felix USDT
-        "0x2900ABd73631b2f60747e687095537B673c06A76", // Felix HYPE
-      ],
-      liquidityVenues: ["liquidSwap", "erc20Wrapper", "erc4626", "uniswapV3"],
-      additionalMarketsWhitelist: [],
-      liquidationBufferBps: 50,
-      useFlashbots: false,
-    },
-  },
-  [monad.id]: {
-    chain: monad,
-    morpho: { address: "0xD5D960E8C380B724a48AC59E2DfF1b2CB4a1eAee", startBlock: 31907457 },
-    adaptiveCurveIrm: {
-      address: "0x09475a3D6eA8c314c592b1a3799bDE044E2F400F",
-      startBlock: 31907457,
-    },
-    metaMorphoFactories: {
-      addresses: ["0x33f20973275B2F574488b18929cd7DCBf1AbF275"],
-      startBlock: 32320327,
-    },
-    preLiquidationFactory: {
-      address: "0xB5b3e541abD19799E0c65905a5a42BD37d6c94c0",
-      startBlock: 32321504,
-    },
-    wNative: "0x3bd359C1119dA7Da1D913D1C4D2B7c461115433A",
-    options: {
-      vaultWhitelist: "morpho-api",
-      additionalMarketsWhitelist: [],
-      liquidityVenues: ["erc20Wrapper", "erc4626", "uniswapV3"],
-      liquidationBufferBps: 50,
-      useFlashbots: false,
-      blockInterval: 10,
+      blockInterval: 4,
     },
   },
 };

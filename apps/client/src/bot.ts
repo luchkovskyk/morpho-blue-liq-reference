@@ -311,12 +311,33 @@ export class LiquidationBot {
       srcAmount: seizableCollateral,
     };
 
+    const convertTimeoutMs = Number(process.env.VENUE_CONVERT_TIMEOUT_MS ?? 3000);
+
     for (const venue of this.liquidityVenues) {
       try {
-        if (await venue.supportsRoute(encoder, toConvert.src, toConvert.dst))
-          toConvert = await venue.convert(encoder, toConvert);
+        if (await venue.supportsRoute(encoder, toConvert.src, toConvert.dst)) {
+          const convertPromise = Promise.resolve(venue.convert(encoder, toConvert));
+          const timeoutPromise = new Promise<never>((_, reject) =>
+            setTimeout(() => {
+              reject(new Error("venue.convert timeout"));
+            }, convertTimeoutMs),
+          );
+          toConvert = await Promise.race([convertPromise, timeoutPromise]);
+        }
       } catch (error) {
-        console.error(`${this.logTag}Error converting ${toConvert.src} to ${toConvert.dst}`, error);
+        if (error instanceof Error && error.message === "venue.convert timeout") {
+          const markSlow = (venue as unknown as { markSlow?: (src: Address, dst: Address) => void })
+            .markSlow;
+          if (markSlow) markSlow(toConvert.src, toConvert.dst);
+          console.error(
+            `${this.logTag}Timeout converting ${toConvert.src} to ${toConvert.dst} via ${venue.constructor.name}`,
+          );
+        } else {
+          console.error(
+            `${this.logTag}Error converting ${toConvert.src} to ${toConvert.dst}`,
+            error,
+          );
+        }
         continue;
       }
 

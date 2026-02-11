@@ -26,6 +26,8 @@ import type { LiquidityVenue } from "../liquidityVenue";
 
 export class UniswapV4Venue implements LiquidityVenue {
   private STALE_TIME = 60 * 60 * 1000; // 1 hour
+  private FETCH_TIMEOUT_MS = 2000;
+  private SLOW_PAIR_TTL_MS = 30 * 60 * 1000; // 30 minutes
   private poolCreationEventsCache: Record<
     Hex,
     {
@@ -35,15 +37,37 @@ export class UniswapV4Venue implements LiquidityVenue {
       lastUpdate: number;
     }
   > = {};
+  private slowPairs = new Map<string, number>(); // pairKey -> timestamp
 
-  supportsRoute(
-    encoder: ExecutorEncoder,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    src: Address,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    dst: Address,
-  ): Promise<boolean> | boolean {
-    return DEPLOYMENTS[encoder.client.chain.id] !== undefined;
+  private pairKey(a: Address, b: Address): string {
+    const [c0, c1] = BigInt(a) < BigInt(b) ? [a, b] : [b, a];
+    return `${c0}${c1}`;
+  }
+
+  markSlow(src: Address, dst: Address) {
+    this.slowPairs.set(this.pairKey(src, dst), Date.now());
+  }
+
+  supportsRoute(encoder: ExecutorEncoder, src: Address, dst: Address): Promise<boolean> | boolean {
+    if (DEPLOYMENTS[encoder.client.chain.id] === undefined) return false;
+
+    const key = this.pairKey(src, dst);
+    const slowSince = this.slowPairs.get(key);
+    if (slowSince !== undefined) {
+      if (Date.now() - slowSince < this.SLOW_PAIR_TTL_MS) return false;
+      this.slowPairs.delete(key);
+    }
+
+    // Check negative cache — pair with no pools
+    const cache =
+      this.poolCreationEventsCache[
+        `${BigInt(src) < BigInt(dst) ? src : dst}${BigInt(src) < BigInt(dst) ? dst : src}` as Hex
+      ];
+    if (cache && Date.now() - cache.lastUpdate < this.STALE_TIME && cache.events.length === 0) {
+      return false;
+    }
+
+    return true;
   }
 
   async convert(encoder: ExecutorEncoder, toConvert: ToConvert) {
@@ -204,17 +228,29 @@ export class UniswapV4Venue implements LiquidityVenue {
     const cacheIsValid = cache?.lastUpdate && Date.now() - cache.lastUpdate < this.STALE_TIME;
 
     try {
-      const poolCreationEvents = cacheIsValid
-        ? cache.events
-        : await getContractEvents(encoder.client, {
-            ...poolManager,
-            abi: uniswapV4PoolManagerAbi,
-            eventName: "Initialize",
-            args: { currency0, currency1 },
-            strict: true,
-          });
+      let poolCreationEvents: Awaited<
+        GetContractEventsReturnType<typeof uniswapV4PoolManagerAbi, "Initialize", true>
+      >;
 
-      if (!cacheIsValid) {
+      if (cacheIsValid) {
+        poolCreationEvents = cache.events;
+      } else {
+        const fetchPromise = getContractEvents(encoder.client, {
+          ...poolManager,
+          abi: uniswapV4PoolManagerAbi,
+          eventName: "Initialize",
+          args: { currency0, currency1 },
+          strict: true,
+        });
+
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => {
+            reject(new Error("fetchPools timeout"));
+          }, this.FETCH_TIMEOUT_MS),
+        );
+
+        poolCreationEvents = await Promise.race([fetchPromise, timeoutPromise]);
+
         this.poolCreationEventsCache[`${currency0}${currency1}`] = {
           events: poolCreationEvents,
           lastUpdate: Date.now(),
@@ -228,6 +264,9 @@ export class UniswapV4Venue implements LiquidityVenue {
 
       return { currency0, currency1, pools };
     } catch (error) {
+      if (error instanceof Error && error.message === "fetchPools timeout") {
+        this.slowPairs.set(`${currency0}${currency1}`, Date.now());
+      }
       throw new Error(
         `(UniswapV4) Error fetching pools: ${error instanceof Error ? error.message : String(error)}`,
       );
