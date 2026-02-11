@@ -37,8 +37,8 @@ import {
   PositionLiquidationCooldownMechanism,
 } from "./utils/cooldownMechanisms.js";
 import { fetchWhitelistedVaults } from "./utils/fetch-whitelisted-vaults.js";
-import { fetchLiquidatablePositions, fetchMarketsForVaults } from "./utils/fetchers.js";
 import { Flashbots } from "./utils/flashbots.js";
+import type { Indexer } from "./indexer/Indexer.js";
 import { LiquidationEncoder } from "./utils/LiquidationEncoder.js";
 import { DEFAULT_LIQUIDATION_BUFFER_BPS, WAD, wMulDown } from "./utils/maths.js";
 
@@ -57,6 +57,7 @@ export interface LiquidationBotInputs {
   positionLiquidationCooldownMechanism?: PositionLiquidationCooldownMechanism;
   marketsFetchingCooldownMechanism: MarketsFetchingCooldownMechanism;
   flashbotAccount?: LocalAccount;
+  indexer: Indexer;
 }
 
 export class LiquidationBot {
@@ -76,6 +77,7 @@ export class LiquidationBot {
   private flashbotAccount?: LocalAccount;
   private coveredMarkets: Hex[];
   private alwaysRealizeBadDebt: boolean;
+  private indexer: Indexer;
 
   constructor(inputs: LiquidationBotInputs) {
     this.logTag = inputs.logTag;
@@ -94,17 +96,14 @@ export class LiquidationBot {
     this.flashbotAccount = inputs.flashbotAccount;
     this.coveredMarkets = [];
     this.alwaysRealizeBadDebt = inputs.alwaysRealizeBadDebt;
+    this.indexer = inputs.indexer;
   }
 
   async run() {
     await this.fetchMarkets();
 
-    const { liquidatablePositions, preLiquidatablePositions } = await fetchLiquidatablePositions(
-      this.client,
-      this.chainAddresses.morpho,
-      this.chainAddresses.preLiquidationFactory,
-      this.coveredMarkets,
-    );
+    const { liquidatablePositions, preLiquidatablePositions } =
+      await this.indexer.getLiquidatablePositions(this.coveredMarkets);
 
     console.log("liquidatablePositions", liquidatablePositions);
 
@@ -396,7 +395,8 @@ export class LiquidationBot {
     const vaultWhitelist = this.vaultWhitelist;
     console.log(`${this.logTag}📝 Watching markets in the following vaults:`, vaultWhitelist);
 
-    const whitelistedMarketsFromVaults = await fetchMarketsForVaults(this.client, vaultWhitelist);
+    this.indexer.updateVaultAddresses(vaultWhitelist);
+    const whitelistedMarketsFromVaults = this.indexer.getMarketsForVaults(vaultWhitelist);
 
     this.coveredMarkets = [...whitelistedMarketsFromVaults, ...this.additionalMarketsWhitelist];
   }

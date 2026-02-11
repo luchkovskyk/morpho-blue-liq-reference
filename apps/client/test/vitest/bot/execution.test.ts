@@ -11,14 +11,12 @@ import { UniswapV3Venue, Erc4626, PendlePTVenue } from "../../../src/liquidityVe
 import { MorphoApi } from "../../../src/pricers/index.js";
 import { MarketsFetchingCooldownMechanism } from "../../../src/utils/cooldownMechanisms.js";
 import { MORPHO, wbtcUSDC, ptsUSDeUSDC, WETH, borrower } from "../../constants.js";
-import { OneInchTest, setupPosition, mockEtherPrice, syncTimestamp } from "../../helpers.js";
+import { MockIndexer, OneInchTest, setupPosition, mockEtherPrice, syncTimestamp } from "../../helpers.js";
 import { encoderTest, pendleOneInchExecutionTest } from "../../setup.js";
 
 describe("execute liquidation swapping on Uniswap V3", () => {
   const erc4626 = new Erc4626();
   const uniswapV3 = new UniswapV3Venue();
-
-  process.env.PONDER_SERVICE_URL = "http://localhost:42069";
 
   beforeEach(() => {
     nock.cleanAll();
@@ -49,6 +47,9 @@ describe("execute liquidation swapping on Uniswap V3", () => {
     await setupPosition(client, marketParams, collateralAmount, borrowAmount);
     mockEtherPrice(2640, marketParams);
 
+    const mockIndexer = new MockIndexer(client, MORPHO);
+    mockIndexer.addPosition(wbtcUSDC, borrower.address);
+
     const bot = new LiquidationBot({
       logTag: "test client",
       chainId: mainnet.id,
@@ -64,6 +65,7 @@ describe("execute liquidation swapping on Uniswap V3", () => {
       marketsFetchingCooldownMechanism: new MarketsFetchingCooldownMechanism(
         MARKETS_FETCHING_COOLDOWN_PERIOD,
       ),
+      indexer: mockIndexer.asIndexer(),
     });
 
     await bot.run();
@@ -115,6 +117,9 @@ describe("execute liquidation swapping on Uniswap V3", () => {
       await setupPosition(client, marketParams, collateralAmount, borrowAmount);
       mockEtherPrice(2640, marketParams);
 
+      const mockIndexer = new MockIndexer(client, MORPHO);
+      mockIndexer.addPosition(wbtcUSDC, borrower.address);
+
       const bot = new LiquidationBot({
         logTag: "test client",
         chainId: mainnet.id,
@@ -130,6 +135,7 @@ describe("execute liquidation swapping on Uniswap V3", () => {
         marketsFetchingCooldownMechanism: new MarketsFetchingCooldownMechanism(
           MARKETS_FETCHING_COOLDOWN_PERIOD,
         ),
+        indexer: mockIndexer.asIndexer(),
       });
 
       await bot.run();
@@ -157,8 +163,6 @@ describe("execute liquidation swapping on Uniswap V3", () => {
 });
 
 describe("execute liquidation combining Pendle PT and 1inch liquidity venues", () => {
-  process.env.PONDER_SERVICE_URL = "http://localhost:42069";
-
   beforeEach(() => {
     nock.cleanAll();
   });
@@ -190,6 +194,9 @@ describe("execute liquidation combining Pendle PT and 1inch liquidity venues", (
 
     await setupPosition(client, marketParams, collateralAmount, borrowAmount);
 
+    const mockIndexer = new MockIndexer(client, MORPHO);
+    mockIndexer.addPosition(ptsUSDeUSDC, borrower.address);
+
     const bot = new LiquidationBot({
       logTag: "test client",
       chainId: mainnet.id,
@@ -204,6 +211,7 @@ describe("execute liquidation combining Pendle PT and 1inch liquidity venues", (
       marketsFetchingCooldownMechanism: new MarketsFetchingCooldownMechanism(
         MARKETS_FETCHING_COOLDOWN_PERIOD,
       ),
+      indexer: mockIndexer.asIndexer(),
     });
 
     // mock pendle api

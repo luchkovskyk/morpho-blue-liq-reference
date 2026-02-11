@@ -5,11 +5,12 @@ import {
   ALWAYS_REALIZE_BAD_DEBT,
   type ChainConfig,
 } from "@morpho-blue-liquidation-bot/config";
-import { Hex } from "viem";
+import { type Address, Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { watchBlocks } from "viem/actions";
 
 import { LiquidationBot, type LiquidationBotInputs } from "./bot";
+import { Indexer } from "./indexer/Indexer";
 import { createPricer } from "./pricers";
 import { createLiquidityVenue } from "./liquidityVenues";
 import {
@@ -18,7 +19,7 @@ import {
 } from "./utils/cooldownMechanisms";
 import { getClient } from "./utils/utils";
 
-export const launchBot = (config: ChainConfig) => {
+export const launchBot = async (config: ChainConfig) => {
   const logTag = `[${config.chain.name} client]: `;
   console.log(`${logTag}Starting up`);
 
@@ -63,6 +64,23 @@ export const launchBot = (config: ChainConfig) => {
     MARKETS_FETCHING_COOLDOWN_PERIOD,
   );
 
+  // INDEXER
+  const initialVaultAddresses: Address[] =
+    config.vaultWhitelist === "morpho-api" ? [] : config.vaultWhitelist;
+
+  const indexer = new Indexer({
+    chainId: config.chainId,
+    client,
+    startBlock: config.startBlock ?? 0n,
+    maxBlockRange: config.maxBlockRange,
+    vaultAddresses: initialVaultAddresses,
+    logTag,
+  });
+
+  console.log(`${logTag}Performing initial indexer sync...`);
+  await indexer.init();
+  console.log(`${logTag}Indexer ready`);
+
   const inputs: LiquidationBotInputs = {
     logTag,
     chainId: config.chainId,
@@ -78,6 +96,7 @@ export const launchBot = (config: ChainConfig) => {
     positionLiquidationCooldownMechanism,
     flashbotAccount,
     alwaysRealizeBadDebt: ALWAYS_REALIZE_BAD_DEBT,
+    indexer,
   };
 
   const bot = new LiquidationBot(inputs);
@@ -89,7 +108,7 @@ export const launchBot = (config: ChainConfig) => {
     onBlock: () => {
       if (count % blockInterval === 0) {
         try {
-          void bot.run();
+          void indexer.sync().then(() => bot.run());
         } catch (e) {
           console.error(`${logTag} uncaught error in bot.run():`, e);
         }

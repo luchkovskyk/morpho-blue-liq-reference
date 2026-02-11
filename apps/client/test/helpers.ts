@@ -1,9 +1,12 @@
-import { MarketUtils } from "@morpho-org/blue-sdk";
+import { AccrualPosition, Market, MarketParams, MarketUtils } from "@morpho-org/blue-sdk";
+import { adaptiveCurveIrmAbi } from "@morpho-org/blue-sdk-viem";
+import { Time } from "@morpho-org/morpho-ts";
 import type { AnvilTestClient } from "@morpho-org/test";
 import { ExecutorEncoder } from "executooor-viem";
 import nock from "nock";
 import {
   type Address,
+  type Client,
   encodePacked,
   fromHex,
   type Hex,
@@ -12,10 +15,12 @@ import {
   maxUint256,
   toHex,
 } from "viem";
-import { getStorageAt, readContract } from "viem/actions";
+import { getStorageAt, multicall, readContract } from "viem/actions";
 import { vi } from "vitest";
 
 import { morphoBlueAbi } from "../src/abis/morpho/morphoBlue";
+import { oracleAbi } from "../src/abis/morpho/oracle";
+import type { Indexer } from "../src/indexer/Indexer";
 import { OneInch } from "../src/liquidityVenues";
 
 import { BORROW_SHARES_AND_COLLATERAL_OFFSET, borrower, MORPHO, POSITION_SLOT } from "./constants";
@@ -79,37 +84,6 @@ export async function setupPosition(
   });
 
   await overwriteCollateral(client, marketId, borrower.address, collateralAmount / 2n);
-
-  const position = await readContract(client, {
-    address: MORPHO,
-    abi: morphoBlueAbi,
-    functionName: "position",
-    args: [marketId, borrower.address],
-  });
-
-  process.env.PONDER_SERVICE_URL = "http://localhost:42069";
-
-  nock("http://localhost:42069")
-    .post("/chain/1/withdraw-queue-set", { vaults: [] })
-    .reply(200, [])
-    .post("/chain/1/liquidatable-positions", { marketIds: [] })
-    .reply(200, {
-      warnings: [],
-      results: [
-        {
-          market: {
-            params: marketParams,
-          },
-          positionsLiq: [
-            {
-              user: borrower.address,
-              seizableCollateral: position[2],
-            },
-          ],
-          positionsPreLiq: [],
-        },
-      ],
-    });
 }
 
 export function mockEtherPrice(
@@ -226,3 +200,119 @@ export const syncTimestamp = async (client: AnvilTestClient, timestamp?: bigint)
 
   return timestamp;
 };
+
+/// Mock Indexer for tests
+
+export class MockIndexer {
+  private client: Client;
+  private morphoAddress: Address;
+  private positions: { marketId: Hex; user: Address }[] = [];
+
+  constructor(client: Client, morphoAddress: Address) {
+    this.client = client;
+    this.morphoAddress = morphoAddress;
+  }
+
+  addPosition(marketId: Hex, user: Address) {
+    this.positions.push({ marketId, user });
+  }
+
+  async init() {}
+  async sync() {}
+  updateVaultAddresses() {}
+  getMarketsForVaults() {
+    return [];
+  }
+
+  async getLiquidatablePositions(_coveredMarketIds: Hex[]) {
+    const liquidatablePositions: AccrualPosition[] = [];
+
+    for (const { marketId, user } of this.positions) {
+      const [params, marketState, posState] = await Promise.all([
+        readContract(this.client, {
+          address: this.morphoAddress,
+          abi: morphoBlueAbi,
+          functionName: "idToMarketParams",
+          args: [marketId],
+        }),
+        readContract(this.client, {
+          address: this.morphoAddress,
+          abi: morphoBlueAbi,
+          functionName: "market",
+          args: [marketId],
+        }),
+        readContract(this.client, {
+          address: this.morphoAddress,
+          abi: morphoBlueAbi,
+          functionName: "position",
+          args: [marketId, user],
+        }),
+      ]);
+
+      // Fetch oracle price
+      const oraclePrice = await readContract(this.client, {
+        address: params[2],
+        abi: oracleAbi,
+        functionName: "price",
+      });
+
+      // Fetch rateAtTarget from IRM (may fail for non-adaptive IRMs)
+      let rateAtTarget: bigint | undefined;
+      try {
+        const results = await multicall(this.client, {
+          contracts: [
+            {
+              address: params[3],
+              abi: adaptiveCurveIrmAbi,
+              functionName: "rateAtTarget" as const,
+              args: [marketId],
+            },
+          ],
+          allowFailure: true,
+        });
+        if (results[0]!.status === "success") {
+          rateAtTarget = results[0]!.result as bigint;
+        }
+      } catch {
+        // IRM may not be adaptive curve
+      }
+
+      const market = new Market({
+        params: new MarketParams({
+          loanToken: params[0],
+          collateralToken: params[1],
+          oracle: params[2],
+          irm: params[3],
+          lltv: params[4],
+        }),
+        totalSupplyAssets: marketState[0],
+        totalSupplyShares: marketState[1],
+        totalBorrowAssets: marketState[2],
+        totalBorrowShares: marketState[3],
+        lastUpdate: marketState[4],
+        fee: marketState[5],
+        price: oraclePrice,
+        rateAtTarget,
+      });
+
+      const accrualPos = new AccrualPosition(
+        { user, supplyShares: posState[0], borrowShares: posState[1], collateral: posState[2] },
+        market,
+      );
+
+      const now = Time.timestamp();
+      const accrued = accrualPos.accrueInterest(now);
+
+      if (accrued.seizableCollateral !== undefined && accrued.seizableCollateral !== 0n) {
+        liquidatablePositions.push(accrued);
+      }
+    }
+
+    return { liquidatablePositions, preLiquidatablePositions: [] as never[] };
+  }
+
+  /** Cast to Indexer type for use in LiquidationBot */
+  asIndexer(): Indexer {
+    return this as unknown as Indexer;
+  }
+}

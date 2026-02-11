@@ -20,6 +20,7 @@ export const chainConfigs: Record<number, Config> = {
     chain: mainnet,
     wNative: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
     maxBlockRange: Number.POSITIVE_INFINITY,
+    startBlock: 18883124n,
     options: {
       vaultWhitelist: [
         "0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB",
@@ -48,6 +49,7 @@ export const chainConfigs: Record<number, Config> = {
     chain: base,
     wNative: "0x4200000000000000000000000000000000000006",
     maxBlockRange: 10_000,
+    startBlock: 13977148n,
     options: {
       vaultWhitelist: ["0xbeeF010f9cb27031ad51e3333f9aF9C6B1228183"],
       additionalMarketsWhitelist: [],
@@ -70,6 +72,7 @@ export const chainConfigs: Record<number, Config> = {
     chain: unichain,
     wNative: "0x4200000000000000000000000000000000000006",
     maxBlockRange: 10_000,
+    startBlock: 9139027n,
     options: {
       vaultWhitelist: "morpho-api",
       additionalMarketsWhitelist: [],
@@ -82,6 +85,7 @@ export const chainConfigs: Record<number, Config> = {
   [katana.id]: {
     chain: katana,
     wNative: "0xEE7D8BCFb72bC1880D0Cf19822eB0A2e6577aB62",
+    startBlock: 2741069n,
     options: {
       vaultWhitelist: "morpho-api",
       additionalMarketsWhitelist: [],
@@ -95,6 +99,7 @@ export const chainConfigs: Record<number, Config> = {
     chain: arbitrum,
     wNative: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
     maxBlockRange: 10_000,
+    startBlock: 296446593n,
     options: {
       vaultWhitelist: "morpho-api",
       additionalMarketsWhitelist: [],
@@ -106,6 +111,7 @@ export const chainConfigs: Record<number, Config> = {
   [worldchain.id]: {
     chain: worldchain,
     wNative: "0x4200000000000000000000000000000000000006",
+    startBlock: 9025669n,
     options: {
       vaultWhitelist: [
         "0xb1E80387EbE53Ff75a89736097D34dC8D9E9045B", // Re7 USDC
@@ -124,6 +130,7 @@ export const chainConfigs: Record<number, Config> = {
     chain: worldchain,
     wNative: "0x5555555555555555555555555555555555555555",
     maxBlockRange: 10_000,
+    startBlock: 1988429n,
     options: {
       vaultWhitelist: [
         "0x8A862fD6c12f9ad34C9c2ff45AB2b6712e8CEa27", // Felix USDC
@@ -140,6 +147,7 @@ export const chainConfigs: Record<number, Config> = {
     chain: monad,
     wNative: "0x3bd359C1119dA7Da1D913D1C4D2B7c461115433A",
     maxBlockRange: 1000,
+    startBlock: 31907457n,
     options: {
       vaultWhitelist: "morpho-api",
       additionalMarketsWhitelist: [],

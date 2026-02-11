@@ -19,10 +19,8 @@ async function run() {
     // Start health server
     await startHealthServer();
 
-    // biome-ignore lint/complexity/noForEach: <explanation>
-    configs.forEach((config) => {
-      launchBot(config);
-    });
+    // Launch all bots (each performs initial indexer sync)
+    await Promise.all(configs.map((config) => launchBot(config)));
   } catch (err) {
     console.error(err);
     process.exit(1);

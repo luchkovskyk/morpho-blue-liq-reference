@@ -16,6 +16,7 @@ export interface Config {
   chain: Chain;
   wNative: Address;
   maxBlockRange?: number;
+  startBlock?: bigint;
   options: Options;
 }
 
